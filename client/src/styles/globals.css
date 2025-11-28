@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Standard CSS for the selection color (Highlighter) */
+::selection {
+  background-color: #facc15; /* This is Tailwind's yellow-400 */
+  color: #171717;            /* This is Tailwind's neutral-900 */
+}
+
+/* Ensure the body takes the dark theme by default */
+body {
+  background-color: #171717;
+  color: white;
+}
