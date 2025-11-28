@@ -156,7 +156,7 @@ export default function AuthPage() {
       
       <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 lg:p-20 relative z-10 bg-neutral-950/80 backdrop-blur-sm">
         
-        <Link href="/home" className="absolute top-8 left-8 flex items-center gap-2 text-neutral-500 hover:text-white transition">
+        <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-neutral-500 hover:text-white transition">
           <ArrowLeftIcon className="w-4 h-4"/> Back to Home
         </Link>
 
