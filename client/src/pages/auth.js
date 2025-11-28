@@ -122,19 +122,43 @@ export default function AuthPage() {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  // ✅ merged version: async, uses loading + localStorage, redirects to /dashboard
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.email && formData.password) {
-      if (typeof window !== 'undefined') {
-        const name = formData.fullName || 'Test User';
-        localStorage.setItem(
-          'user',
-          JSON.stringify({ name: name, email: formData.email })
-        );
-      }
-      router.push('/dashboard');
-    } else {
+    setError('');
+
+    if (!formData.email || !formData.password) {
       setError('Please fill in email and password.');
+      return;
+    }
+
+    if (!isLogin && !formData.fullName) {
+      setError('Full name is required for sign up.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // mock API delay
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      const user = {
+        name: formData.fullName || 'Creator',
+        email: formData.email,
+        joined: new Date().toISOString(),
+      };
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
+      router.push('/dashboard');
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
