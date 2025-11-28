@@ -74,7 +74,7 @@ app.get('/api/files', (req, res) => {
       return {
         id: file,
         name: file.substring(file.indexOf('-') + 1),
-        url: `http://localhost:5000/uploads/${file}`,
+        url: `https://stupendously-unligatured-tamar.ngrok-free.dev/uploads/${file}`,
         type: type,
         size: stats.size,
         date: new Date(stats.mtime)
