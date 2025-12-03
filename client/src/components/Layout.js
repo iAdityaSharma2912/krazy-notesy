@@ -16,7 +16,7 @@ const Sidebar = () => {
   const [user, setUser] = useState({ name: 'Creator', email: '' });
 
   useEffect(() => {
-    // Retrieve user info from localStorage
+    // Retrieve user info from localStorage (Must run on mount)
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -29,9 +29,7 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    // --- CHANGE HERE: Path is now /dashboard ---
     { name: 'Dashboard', icon: <HomeIcon className="w-6 h-6" />, path: '/dashboard' },
-    // ------------------------------------------
     { name: 'Media Dropbox', icon: <CloudArrowUpIcon className="w-6 h-6" />, path: '/dropbox' },
     { name: 'Scheduler', icon: <CalendarDaysIcon className="w-6 h-6" />, path: '/scheduler' },
     { name: 'Analytics', icon: <ChartBarIcon className="w-6 h-6" />, path: '/analytics' },
@@ -42,9 +40,11 @@ const Sidebar = () => {
     <div className="h-screen w-64 bg-neutral-900 border-r border-neutral-800 flex flex-col fixed left-0 top-0">
       
       <div className="p-8">
-        <h1 className="text-2xl font-black tracking-tighter text-white">
-          KRAZY<span className="text-yellow-400">NOTESY</span>.
-        </h1>
+        <Link href="/dashboard" className="cursor-pointer">
+            <h1 className="text-2xl font-black tracking-tighter text-white">
+                KRAZY<span className="text-yellow-400">NOTESY</span>.
+            </h1>
+        </Link>
       </div>
 
       <nav className="flex-1 px-4 space-y-2">

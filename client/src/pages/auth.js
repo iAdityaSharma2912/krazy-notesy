@@ -60,12 +60,7 @@ const KrazyEye = ({ focusedInput }) => {
             boxShadow: 'inset -10px -10px 40px rgba(0,0,0,0.5), 0 20px 50px rgba(0,0,0,0.5)'
           }}
         >
-          <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 100 100">
-            <path d="M10,50 Q30,45 40,50 T70,50" stroke="#ef4444" strokeWidth="0.5" fill="none" />
-            <path d="M80,20 Q70,40 85,50" stroke="#ef4444" strokeWidth="0.5" fill="none" />
-            <path d="M20,80 Q30,70 15,60" stroke="#ef4444" strokeWidth="0.5" fill="none" />
-            <path d="M90,80 Q70,70 85,50" stroke="#ef4444" strokeWidth="0.5" fill="none" />
-          </svg>
+          {/* Veins SVG removed for cleaner look */}
 
           <div 
             className="w-40 h-40 rounded-full flex items-center justify-center relative transition-transform duration-75 ease-out shadow-lg"
@@ -128,18 +123,15 @@ export default function AuthPage() {
 
         // Save User Session
         const user = { 
-            name: formData.fullName || 'Creator', // Use 'Creator' default if logging in without name field visible (though API would provide it)
+            name: formData.fullName || 'Creator', 
             email: formData.email,
             joined: new Date().toLocaleDateString()
         };
         
-        // If logging in, try to keep the name generic or simulate fetching. 
-        // For this demo, we'll just save what we have.
         localStorage.setItem('user', JSON.stringify(user));
         
         console.log("Logged in as:", user);
-        // --- CORRECT REDIRECT: Send to Dashboard Route ---
-        router.push('/dashboard');
+        router.push('/dashboard'); // --- REDIRECT TO DASHBOARD ---
       } else {
         throw new Error("Please fill in all fields.");
       }
@@ -151,13 +143,18 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
+  
+  // New handler for Forgot Password
+  const handleForgotPassword = () => {
+      alert("This feature is currently disabled in the prototype. In a production environment, a password reset link would be sent to your email.");
+  };
+
 
   return (
     <div className="min-h-screen flex bg-neutral-950 text-white overflow-hidden">
       
       <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 lg:p-20 relative z-10 bg-neutral-950/80 backdrop-blur-sm">
         
-        {/* --- Back to Home Link (Points to '/') --- */}
         <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-neutral-500 hover:text-white transition">
           <ArrowLeftIcon className="w-4 h-4"/> Back to Home
         </Link>
@@ -181,54 +178,31 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-xs font-bold text-neutral-500 mb-1 uppercase">Full Name</label>
-                <input 
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-                  placeholder="John Doe"
-                  onFocus={() => setFocusedInput('email')} 
-                  onBlur={() => setFocusedInput(null)}
-                />
+                <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors" placeholder="John Doe" onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)} />
               </div>
             )}
 
             <div>
               <label className="block text-xs font-bold text-neutral-500 mb-1 uppercase">Email Address</label>
-              <input 
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors"
-                placeholder="you@example.com"
-                onFocus={() => setFocusedInput('email')} 
-                onBlur={() => setFocusedInput(null)}
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors" placeholder="you@example.com" onFocus={() => setFocusedInput('email')} onBlur={() => setFocusedInput(null)} />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-neutral-500 mb-1 uppercase">Password</label>
               <div className="relative">
-                <input 
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors pr-10"
-                  placeholder="••••••••"
-                  onFocus={() => setFocusedInput('password')} 
-                  onBlur={() => setFocusedInput(null)}
-                />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-neutral-500 hover:text-white"
-                >
+                <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-white focus:border-yellow-400 focus:outline-none transition-colors pr-10" placeholder="••••••••" onFocus={() => setFocusedInput('password')} onBlur={() => setFocusedInput(null)} />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3.5 text-neutral-500 hover:text-white">
                   {showPassword ? <EyeSlashIcon className="w-5 h-5"/> : <EyeIcon className="w-5 h-5"/>}
                 </button>
               </div>
+              
+              {isLogin && (
+                <div className="text-right mt-1">
+                  <button type="button" onClick={handleForgotPassword} className="text-xs text-neutral-500 hover:text-yellow-400 transition-colors">
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
             </div>
 
             <button 
