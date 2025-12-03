@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { EyeIcon, EyeSlashIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
-// ✅ Use shared icons from SocialIcons.js
+// Shared social icons
 import { GoogleIcon, TwitterIcon } from '@/components/SocialIcons';
 
-// --- THE INTERACTIVE EYE COMPONENT ---
+// --- INTERACTIVE EYE ---
 const KrazyEye = ({ focusedInput }) => {
   const eyeRef = useRef(null);
   const [pupilPos, setPupilPos] = useState({ x: 0, y: 0 });
@@ -19,18 +19,19 @@ const KrazyEye = ({ focusedInput }) => {
       const eyeCenterX = rect.left + rect.width / 2;
       const eyeCenterY = rect.top + rect.height / 2;
 
-      let targetX, targetY;
+      let targetX;
+      let targetY;
 
       if (focusedInput === 'password') {
-        // Look down/closed (Simulate hiding)
+        // look down
         targetX = eyeCenterX;
         targetY = eyeCenterY + 150;
       } else if (focusedInput === 'email') {
-        // Look at the form (left side of screen)
+        // look towards form
         targetX = rect.left - 400;
         targetY = eyeCenterY;
       } else {
-        // Look at Mouse
+        // follow mouse
         targetX = e.clientX;
         targetY = e.clientY;
       }
@@ -56,7 +57,7 @@ const KrazyEye = ({ focusedInput }) => {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center">
       <div className="relative w-96 h-96 flex items-center justify-center">
-        <div className="absolute inset-0 bg-yellow-500/10 rounded-full blur-[60px] animate-pulse"></div>
+        <div className="absolute inset-0 bg-yellow-500/10 rounded-full blur-[60px] animate-pulse" />
 
         <div
           ref={eyeRef}
@@ -84,10 +85,10 @@ const KrazyEye = ({ focusedInput }) => {
                 backgroundImage:
                   'repeating-conic-gradient(#a16207 0% 1%, transparent 1% 5%)',
               }}
-            ></div>
+            />
             <div className="w-20 h-20 bg-black rounded-full relative shadow-inner">
-              <div className="absolute top-4 right-5 w-6 h-4 bg-white rounded-full opacity-90 rotate-45 blur-[1px]"></div>
-              <div className="absolute bottom-4 left-5 w-2 h-2 bg-white rounded-full opacity-40 blur-[2px]"></div>
+              <div className="absolute top-4 right-5 w-6 h-4 bg-white rounded-full opacity-90 rotate-45 blur-[1px]" />
+              <div className="absolute bottom-4 left-5 w-2 h-2 bg-white rounded-full opacity-40 blur-[2px]" />
             </div>
           </div>
 
@@ -96,7 +97,7 @@ const KrazyEye = ({ focusedInput }) => {
               focusedInput === 'password' ? 'translate-y-0' : '-translate-y-full'
             }`}
             style={{ borderBottom: '8px solid #171717' }}
-          ></div>
+          />
         </div>
       </div>
     </div>
@@ -114,6 +115,7 @@ export default function AuthPage() {
     email: '',
     password: '',
   });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -122,7 +124,6 @@ export default function AuthPage() {
     setError('');
   };
 
-  // ✅ merged version: async, uses loading + localStorage, redirects to /dashboard
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -140,7 +141,7 @@ export default function AuthPage() {
     try {
       setLoading(true);
 
-      // mock API delay
+      // mock delay
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       const user = {
@@ -287,11 +288,11 @@ export default function AuthPage() {
           </form>
 
           <div className="flex items-center my-6">
-            <div className="flex-1 border-t border-neutral-800"></div>
+            <div className="flex-1 border-t border-neutral-800" />
             <span className="px-4 text-neutral-500 text-xs font-bold uppercase">
               Or continue with
             </span>
-            <div className="flex-1 border-t border-neutral-800"></div>
+            <div className="flex-1 border-t border-neutral-800" />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -321,7 +322,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* RIGHT SIDE: THE MONSTER EYE */}
+      {/* RIGHT SIDE: EYE */}
       <div className="hidden lg:flex w-1/2 bg-neutral-900 relative items-center justify-center overflow-hidden border-l border-neutral-800">
         <div
           className="absolute inset-0 opacity-20"
@@ -329,11 +330,9 @@ export default function AuthPage() {
             backgroundImage: 'radial-gradient(#404040 1px, transparent 1px)',
             backgroundSize: '30px 30px',
           }}
-        ></div>
-
+        />
         <div className="relative z-10 flex flex-col items-center">
           <KrazyEye focusedInput={focusedInput} />
-
           <div className="mt-16 text-center opacity-50">
             <p className="text-xl font-black text-neutral-700 tracking-[0.5em] uppercase">
               Krazy Notesy

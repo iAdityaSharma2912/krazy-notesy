@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import MediaDropzone from '@/components/MediaDropzone';
-import { 
-  PhotoIcon, 
-  VideoCameraIcon, 
-  PlayCircleIcon, 
+import {
+  PhotoIcon,
+  VideoCameraIcon,
+  PlayCircleIcon,
   EllipsisHorizontalIcon,
   ArrowPathIcon,
   TrashIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import axios from 'axios';
@@ -21,7 +21,7 @@ export default function Dropbox() {
   // userId for MediaDropzone (optional – it will also fall back to localStorage)
   const [userId, setUserId] = useState(null);
 
-  // NEW: State for selected files
+  // Selected file IDs
   const [selectedFiles, setSelectedFiles] = useState(new Set());
 
   // Load user from localStorage
@@ -42,21 +42,18 @@ export default function Dropbox() {
   // Normalise media URL (handles absolute + relative paths)
   const getMediaUrl = (url) => {
     if (!url) return '';
-    // Already an absolute URL
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    // Make it absolute using API_URL
-    const base = API_URL.replace(/\/+$/, ''); // trim trailing slash
+    const base = API_URL.replace(/\/+$/, '');
     const path = url.startsWith('/') ? url : `/${url}`;
     return `${base}${path}`;
   };
 
-  // Fetch files from Backend
+  // Fetch files from backend
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      // Use the same API base everywhere
       const res = await axios.get(`${API_URL}/api/files`);
       setGalleryItems(res.data || []);
       setSelectedFiles(new Set()); // Reset selection on refresh
@@ -75,12 +72,14 @@ export default function Dropbox() {
   const filteredItems = galleryItems.filter((item) => item.type === activeTab);
 
   const getIcon = (type) => {
-    if (type === 'pictures') return <PhotoIcon className="w-8 h-8 text-purple-400" />;
-    if (type === 'shorts') return <PlayCircleIcon className="w-8 h-8 text-pink-500" />;
+    if (type === 'pictures')
+      return <PhotoIcon className="w-8 h-8 text-purple-400" />;
+    if (type === 'shorts')
+      return <PlayCircleIcon className="w-8 h-8 text-pink-500" />;
     return <VideoCameraIcon className="w-8 h-8 text-blue-400" />;
   };
 
-  // --- SELECTION LOGIC ---
+  // Toggle selection
   const toggleSelection = (id) => {
     const newSelection = new Set(selectedFiles);
     if (newSelection.has(id)) {
@@ -93,16 +92,22 @@ export default function Dropbox() {
 
   const deleteSelected = async () => {
     if (selectedFiles.size === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedFiles.size} files?`)) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedFiles.size} files?`
+      )
+    )
+      return;
 
     try {
       await axios.post(`${API_URL}/api/files/delete`, {
         ids: Array.from(selectedFiles),
       });
-      fetchFiles(); // Refresh list after delete
+      fetchFiles();
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Failed to delete files.');
+      window.alert('Failed to delete files.');
     }
   };
 
@@ -132,7 +137,9 @@ export default function Dropbox() {
             onClick={fetchFiles}
             className="flex items-center gap-2 text-sm font-bold text-yellow-400 hover:text-white transition-colors bg-neutral-800 px-4 py-2 rounded-lg border border-neutral-700"
           >
-            <ArrowPathIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <ArrowPathIcon
+              className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </button>
         </div>
@@ -141,7 +148,6 @@ export default function Dropbox() {
       {/* 2. Upload Zone */}
       <div className="bg-neutral-800 p-6 rounded-2xl border border-neutral-700 mb-10">
         <h3 className="text-white font-bold mb-4">Upload New Assets</h3>
-        {/* pass userId (dropzone also falls back to localStorage) */}
         <MediaDropzone userId={userId} />
       </div>
 
@@ -156,13 +162,11 @@ export default function Dropbox() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-4 text-sm font-bold transition-all relative
-                ${
-                  activeTab === tab.id
-                    ? 'text-yellow-400'
-                    : 'text-neutral-400 hover:text-white'
-                }
-              `}
+              className={`pb-4 text-sm font-bold transition-all relative ${
+                activeTab === tab.id
+                  ? 'text-yellow-400'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
             >
               {tab.label}
               {activeTab === tab.id && (
@@ -182,23 +186,28 @@ export default function Dropbox() {
         ) : filteredItems.length > 0 ? (
           filteredItems.map((item) => {
             const isSelected = selectedFiles.has(item.id);
+            const isVideo = item.type === 'shorts' || item.type === 'videos';
             const src = getMediaUrl(item.url);
 
             return (
               <div
                 key={item.id}
                 onClick={() => toggleSelection(item.id)}
-                className={`group relative bg-neutral-900 border rounded-xl overflow-hidden cursor-pointer transition-all duration-200
-                  ${
-                    isSelected
-                      ? 'border-yellow-400 ring-1 ring-yellow-400'
-                      : 'border-neutral-800 hover:border-neutral-600'
-                  }
-                `}
+                className={`group relative bg-neutral-900 border rounded-xl overflow-hidden cursor-pointer transition-all duration-200 ${
+                  isSelected
+                    ? 'border-yellow-400 ring-1 ring-yellow-400'
+                    : 'border-neutral-800 hover:border-neutral-600'
+                }`}
               >
                 {/* Thumbnail / Icon */}
                 <div className="h-32 bg-neutral-800 flex items-center justify-center group-hover:bg-neutral-700 transition-colors overflow-hidden">
-                  {item.type === 'pictures' && src ? (
+                  {isVideo && src ? (
+                    <video
+                      src={src}
+                      className="w-full h-full object-cover opacity-80"
+                      preload="metadata"
+                    />
+                  ) : item.type === 'pictures' && src ? (
                     <img
                       src={src}
                       alt={item.name}
@@ -209,7 +218,7 @@ export default function Dropbox() {
                   )}
                 </div>
 
-                {/* Selection Checkbox Overlay */}
+                {/* Selection Checkbox */}
                 <div className="absolute top-2 right-2 z-10">
                   {isSelected ? (
                     <CheckCircleSolid className="w-6 h-6 text-yellow-400 bg-neutral-900 rounded-full" />
@@ -217,6 +226,13 @@ export default function Dropbox() {
                     <CheckCircleIcon className="w-6 h-6 text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity bg-neutral-900/50 rounded-full" />
                   )}
                 </div>
+
+                {/* Play overlay for video */}
+                {isVideo && !isSelected && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
+                    <PlayCircleIcon className="w-10 h-10 text-white/80 group-hover:text-white" />
+                  </div>
+                )}
 
                 {/* Details */}
                 <div className="p-3">

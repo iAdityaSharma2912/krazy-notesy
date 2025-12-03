@@ -53,10 +53,17 @@ export default function Profile() {
 
   const handleSave = () => {
     const updatedUser = { ...user, ...formData };
-    // Save to local storage (Simulating backend update)
+    
+    // 1. Save updated data to local storage
     localStorage.setItem('user', JSON.stringify(updatedUser));
+    
+    // 2. Update local state
     setUser(updatedUser);
     setIsEditing(false);
+    
+    // 3. --- NEW: Force the Sidebar to reload the new user data ---
+    router.reload();
+    // -----------------------------------------------------------
   };
 
   const handleCancel = () => {
