@@ -138,6 +138,7 @@ export default function AuthPage() {
         localStorage.setItem('user', JSON.stringify(user));
         
         console.log("Logged in as:", user);
+        // --- CORRECT REDIRECT: Send to Dashboard Route ---
         router.push('/dashboard');
       } else {
         throw new Error("Please fill in all fields.");
@@ -156,6 +157,7 @@ export default function AuthPage() {
       
       <div className="w-full lg:w-1/2 flex flex-col justify-center p-8 lg:p-20 relative z-10 bg-neutral-950/80 backdrop-blur-sm">
         
+        {/* --- Back to Home Link (Points to '/') --- */}
         <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-neutral-500 hover:text-white transition">
           <ArrowLeftIcon className="w-4 h-4"/> Back to Home
         </Link>
