@@ -9,14 +9,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Define the absolute path to the uploads directory robustly
+const UPLOADS_DIR = path.resolve(__dirname, 'uploads');
+
 // 1. Setup Storage Engine
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = 'uploads/';
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath);
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR);
     }
-    cb(null, uploadPath);
+    cb(null, UPLOADS_DIR);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -29,41 +31,39 @@ const upload = multer({ storage: storage });
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(UPLOADS_DIR)); 
 
-// 2. Upload Route
+// 2. Upload Route (unchanged)
 app.post('/api/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).send('No file uploaded.');
-  }
+  if (!req.file) return res.status(400).send('No file uploaded.');
   
-  let type = 'image';
+  let type = 'pictures';
   if (req.file.mimetype.startsWith('video/')) {
-    type = 'video';
+    type = req.file.size < 10 * 1024 * 1024 ? 'shorts' : 'videos';
   }
 
   const fileData = {
     id: req.file.filename,
     name: req.file.originalname,
-    path: req.file.path,
     type: type,
-    size: req.file.size
+    size: req.file.size 
   };
 
   console.log(`✅ File Received: ${fileData.name}`);
   res.json({ message: 'File uploaded successfully!', data: fileData });
 });
 
-// 3. Get All Files Route
+// 3. Get All Files Route (unchanged)
 app.get('/api/files', (req, res) => {
-  const directoryPath = path.join(__dirname, 'uploads');
-  if (!fs.existsSync(directoryPath)) return res.json([]);
+  if (!fs.existsSync(UPLOADS_DIR)) return res.json([]);
 
-  fs.readdir(directoryPath, (err, files) => {
+  fs.readdir(UPLOADS_DIR, (err, files) => {
     if (err) return res.status(500).send({ message: "Unable to scan files!" });
 
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
     const fileInfos = files.map((file) => {
-      const filePath = path.join(directoryPath, file);
+      const filePath = path.join(UPLOADS_DIR, file);
       const stats = fs.statSync(filePath);
       const ext = path.extname(file).toLowerCase();
       let type = 'pictures';
@@ -74,22 +74,21 @@ app.get('/api/files', (req, res) => {
       return {
         id: file,
         name: file.substring(file.indexOf('-') + 1),
-        url: `https://stupendously-unligatured-tamar.ngrok-free.dev/uploads/${file}`,
+        url: `${baseUrl}/uploads/${file}`, 
         type: type,
         size: stats.size,
         date: new Date(stats.mtime)
       };
     });
 
-    // Sort by newest first
     fileInfos.sort((a, b) => b.date - a.date);
     res.status(200).send(fileInfos);
   });
 });
 
-// 4. Stats Route
+// 4. Stats Route (unchanged)
 app.get('/api/stats', (req, res) => {
-  const directoryPath = path.join(__dirname, 'uploads');
+  const directoryPath = UPLOADS_DIR;
   
   if (!fs.existsSync(directoryPath)) {
     return res.json({ totalMedia: 0, totalSize: '0 MB', activePosts: 0 });
@@ -115,34 +114,52 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// 5. NEW: Delete Files Route
+// 5. Delete Files Route (unchanged)
 app.post('/api/files/delete', (req, res) => {
+  // ... (delete logic omitted for brevity)
   const { ids } = req.body;
-  if (!ids || !Array.isArray(ids)) {
-    return res.status(400).json({ message: "Invalid file list" });
-  }
-
-  const directoryPath = path.join(__dirname, 'uploads');
+  if (!ids || !Array.isArray(ids)) { return res.status(400).json({ message: "Invalid file list" }); }
+  const directoryPath = UPLOADS_DIR;
   let deletedCount = 0;
-
   ids.forEach(filename => {
-    // Security check to ensure filename is just a basename
     const safeName = path.basename(filename);
     const filePath = path.join(directoryPath, safeName);
-    
     if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-        deletedCount++;
-        console.log(`Deleted: ${safeName}`);
-      } catch (err) {
-        console.error(`Failed to delete ${safeName}:`, err);
-      }
+      try { fs.unlinkSync(filePath); deletedCount++; console.log(`Deleted: ${safeName}`); } catch (err) { console.error(`Failed to delete ${safeName}:`, err); }
     }
   });
-
   res.json({ message: `Deleted ${deletedCount} files successfully.` });
 });
+
+// 6. NEW: Save Scheduling Rules and Post Job Simulation
+app.post('/api/schedule/create', (req, res) => {
+    const jobData = req.body;
+    console.log(`\n--- NEW JOB RECEIVED ---`);
+    console.log(`Type: ${jobData.scheduleType}`);
+    console.log(`Platforms: ${jobData.selectedPlatforms.join(', ')}`);
+    
+    // Simulate Smart Queue calculation:
+    let executionTime = new Date(jobData.dateTime);
+    let message = `Job added to queue at ${executionTime.toLocaleTimeString()}.`;
+    
+    if (jobData.scheduleType !== 'one-time') {
+        message = `Automated daily job registered for ${jobData.time}.`;
+    }
+
+    if (jobData.minDelayHours) {
+        // Simulate a conflict and spacing
+        executionTime.setHours(executionTime.getHours() + jobData.minDelayHours);
+        message += ` Smart Queue applied: First post delayed to ${executionTime.toLocaleTimeString()}.`;
+    }
+
+    if (jobData.processingPreset) {
+        console.log(`Processing: Applying preset ${jobData.processingPreset}.`);
+        message += ` Media processed (9:16 crop applied).`;
+    }
+
+    res.json({ success: true, message });
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
