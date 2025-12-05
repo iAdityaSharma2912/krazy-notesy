@@ -2,11 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { 
   CalendarDaysIcon, ClockIcon, PhotoIcon, SparklesIcon, CheckCircleIcon, VideoCameraIcon,
   QueueListIcon, ArrowsRightLeftIcon, CheckBadgeIcon, XMarkIcon, ArchiveBoxIcon, 
-  RssIcon, AdjustmentsHorizontalIcon, Square3Stack3DIcon
+  RssIcon, AdjustmentsHorizontalIcon, LinkIcon
 } from '@heroicons/react/24/outline';
 import { FaInstagram, FaYoutube, FaXTwitter } from 'react-icons/fa6';
 import axios from 'axios';
 import API_URL from '@/utils/api'; 
+import { InstagramIcon, YoutubeIcon, TwitterIcon, FacebookIcon, ThreadsIcon, PinterestIcon } from '@/components/SocialIcons';
+
+
+// Global variables (Assumed to be set by _app.js)
+const db = typeof window !== 'undefined' ? window.db : null;
+const appId = typeof window !== 'undefined' ? window.appId : 'default-app-id';
 
 export default function Scheduler() {
   const [mediaFiles, setMediaFiles] = useState([]);
@@ -18,7 +24,6 @@ export default function Scheduler() {
   const [caption, setCaption] = useState(''); 
   
   const [minDelayHours, setMinDelayHours] = useState(0); 
-  const [processingPreset, setProcessingPreset] = useState(null); 
   
   const [isAutoAiEnabled, setIsAutoAiEnabled] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
@@ -29,12 +34,15 @@ export default function Scheduler() {
   const [userName, setUserName] = useState('KrazyUser'); 
 
   const platformOptions = [
-    { id: 'instagram', label: 'Instagram', icon: <FaInstagram className="w-4 h-4" /> },
-    { id: 'youtube', label: 'YouTube', icon: <FaYoutube className="w-4 h-4" /> },
-    { id: 'twitter', label: 'X / Twitter', icon: <FaXTwitter className="w-4 h-4" /> },
+    { id: 'instagram', label: 'Instagram', icon: <InstagramIcon className="w-4 h-4" /> },
+    { id: 'threads', label: 'Threads', icon: <ThreadsIcon className="w-4 h-4 text-black bg-white rounded-full p-0.5" /> },
+    { id: 'facebook', label: 'Facebook', icon: <FacebookIcon className="w-4 h-4 text-blue-600" /> },
+    { id: 'youtube', label: 'YouTube', icon: <YoutubeIcon className="w-4 h-4" /> },
+    { id: 'twitter', label: 'X / Twitter', icon: <TwitterIcon className="w-4 h-4" /> },
+    { id: 'pinterest', label: 'Pinterest', icon: <PinterestIcon className="w-4 h-4 text-red-600" /> },
   ];
 
-  // FIX: All data fetching and localStorage access protected by window check
+  // FIX: All localStorage and Axios calls moved inside useEffect and protected by window check
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -136,7 +144,6 @@ export default function Scheduler() {
         selectedFileIds: Array.from(selectedFiles),
         caption,
         minDelayHours: minDelayHours,
-        processingPreset: processingPreset,
     };
 
     try {
@@ -159,6 +166,10 @@ export default function Scheduler() {
   
   const selectedPreviewFile = mediaFiles.find(f => selectedFiles.has(f.id));
   const scheduleTimeLabel = scheduleType === 'one-time' ? 'One Time' : 'Every Day';
+  
+  // Determine if Step 2 (Time) is valid to unlock Step 3
+  const isStep2Complete = time && (scheduleType === 'fully-auto' || date);
+
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -167,7 +178,6 @@ export default function Scheduler() {
         <div><h2 className="text-3xl font-black text-white">Scheduler</h2><p className="text-neutral-400">Plan your content supply chain.</p></div>
       </div>
       
-      {/* Display Load Error */}
       {loadError && (
           <div className="p-4 mb-4 bg-red-800/20 border border-red-700 rounded-xl text-red-400 font-bold">
               Error: {loadError}
@@ -179,9 +189,10 @@ export default function Scheduler() {
         {/* LEFT COLUMN: The Configuration Form */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* 1. Select Media (Disabled/Viewed Differently in Fully-Auto) */}
+          {/* STEP 1: Media Selection */}
           <div className={`bg-neutral-800 p-6 rounded-2xl border ${scheduleType === 'fully-auto' ? 'opacity-40' : 'border-neutral-700'}`}>
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="bg-neutral-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>Select Content ({selectedFiles.size} selected)</h3>
+            
             {scheduleType === 'fully-auto' ? (<div className="text-neutral-500 text-sm italic py-4 flex items-center gap-2"><ArchiveBoxIcon className="w-5 h-5" />System will randomly select from all available media files daily.</div>) 
             : mediaFiles.length > 0 ? (<>
                 <div className="mb-4 flex gap-3">
@@ -199,9 +210,9 @@ export default function Scheduler() {
                 </div></>) : (<div className="text-neutral-500 text-sm italic py-4">No media found. Upload something in the Dropbox first!</div>)}
           </div>
 
-          {/* 2. Date & Time & Rules */}
-          <div className="bg-neutral-800 p-6 rounded-2xl border border-neutral-700">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="bg-neutral-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>Scheduling & Rules</h3>
+          {/* STEP 2: Date & Time & Recurrence (Always Visible) */}
+          <div className="bg-neutral-800 p-6 rounded-2xl border border-yellow-400/50">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="bg-yellow-400 text-neutral-900 w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>Scheduling & Recurrence</h3>
             
             <div className="flex gap-4 mb-4 bg-neutral-900 p-2 rounded-xl">
                 <button onClick={() => setScheduleType('one-time')} className={`flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-colors ${scheduleType === 'one-time' ? 'bg-yellow-400 text-neutral-900 shadow-lg' : 'text-neutral-500 hover:text-neutral-300'}`}>One-Time Post</button>
@@ -214,7 +225,7 @@ export default function Scheduler() {
             </div>
             
             {/* NEW: Smart Queue Rule (Minimum Delay) */}
-            <div className="mt-6 pt-4 border-t border-neutral-700">
+            <div className={`mt-6 pt-4 border-t border-neutral-700 ${scheduleType === 'one-time' ? '' : 'opacity-40'}`}>
                 <h4 className="text-sm font-bold text-neutral-400 mb-2 flex items-center gap-2"><RssIcon className="w-4 h-4 text-purple-400"/> Smart Queue Rules</h4>
                 <div className="flex items-center gap-3">
                     <label className="text-sm text-white flex-1">Min Delay Between Posts (Hours):</label>
@@ -234,67 +245,53 @@ export default function Scheduler() {
             </div>
           </div>
 
-          {/* 3. Caption & Platforms & Processing */}
-          <div className={`bg-neutral-800 p-6 rounded-2xl border border-neutral-700`}>
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className="bg-neutral-700 w-6 h-6 rounded-full flex items-center justify-center text-xs">3</span>Details & Processing</h3>
+          {/* STEP 3: Caption & Platforms & Processing */}
+          <div className={`bg-neutral-800 p-6 rounded-2xl border ${isStep2Complete ? 'border-neutral-700' : 'opacity-40 border-neutral-800'}`}
+               title={!isStep2Complete ? 'Complete Step 2 to unlock details' : ''}
+          >
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${isStep2Complete ? 'bg-yellow-400 text-neutral-900' : 'bg-neutral-700'}`}>3</span>Details & Processing</h3>
             
             {/* Platform Toggles - Visible in ALL modes now */}
-            <div className="mb-6">
-                <h4 className="text-sm font-bold text-neutral-400 mb-2">Target Platforms</h4>
-                <div className="flex flex-wrap gap-3">
-                    <button onClick={handleSelectAllPlatforms} className={`px-3 py-1.5 rounded-lg text-sm font-bold border transition-all flex items-center gap-2
-                          ${selectedPlatforms.size > 0 ? 'bg-purple-600/20 text-purple-400 border-purple-500/50' : 'bg-neutral-700/50 text-neutral-400 border-neutral-600'}`}>
-                        <QueueListIcon className="w-4 h-4" /> 
-                        {platformOptions.filter(p => connectedPlatforms[p.id]).length === selectedPlatforms.size ? 'Deselect All' : 'Select All'} ({selectedPlatforms.size}/{platformOptions.filter(p => connectedPlatforms[p.id]).length})
-                    </button>
-                    {platformOptions.map(platform => {
-                        const isSelected = selectedPlatforms.has(platform.id);
-                        const isConnected = connectedPlatforms[platform.id];
-                        return (<button key={platform.id} onClick={() => {if (isConnected) { togglePlatform(platform.id); } else { alert(`Please connect your ${platform.label} account in the Configuration tab first.`); }}}
-                                disabled={!isConnected} 
-                                title={!isConnected ? `Connect ${platform.label} in Config tab` : ''}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold border transition-all flex items-center gap-2
-                                  ${isSelected ? 'bg-yellow-400 text-black border-yellow-400' : isConnected ? 'bg-transparent text-neutral-400 border-neutral-600 hover:border-neutral-400 hover:text-white' : 'bg-neutral-900/50 text-neutral-700 border-neutral-800 cursor-not-allowed'}`}>
-                                {platform.icon}
-                                {platform.label}
-                              </button>)})}
+            <fieldset disabled={!isStep2Complete}>
+                <div className="mb-6">
+                    <h4 className="text-sm font-bold text-neutral-400 mb-2">Target Platforms</h4>
+                    <div className="flex flex-wrap gap-3">
+                        <button onClick={handleSelectAllPlatforms} className={`px-3 py-1.5 rounded-lg text-sm font-bold border transition-all flex items-center gap-2
+                              ${selectedPlatforms.size > 0 ? 'bg-purple-600/20 text-purple-400 border-purple-500/50' : 'bg-neutral-700/50 text-neutral-400 border-neutral-600'}`}>
+                            <QueueListIcon className="w-4 h-4" /> 
+                            {platformOptions.filter(p => connectedPlatforms[p.id]).length === selectedPlatforms.size ? 'Deselect All' : 'Select All'} ({selectedPlatforms.size}/{platformOptions.filter(p => connectedPlatforms[p.id]).length})
+                        </button>
+                        {platformOptions.map(platform => {
+                            const isSelected = selectedPlatforms.has(platform.id);
+                            const isConnected = connectedPlatforms[platform.id];
+                            return (<button key={platform.id} onClick={() => {if (isConnected) { togglePlatform(platform.id); } else { alert(`Please connect your ${platform.label} account in the Configuration tab first.`); }}}
+                                    disabled={!isConnected} 
+                                    title={!isConnected ? `Connect ${platform.label} in Config tab` : ''}
+                                    className={`px-4 py-2 rounded-lg text-sm font-bold border transition-all flex items-center gap-2
+                                      ${isSelected ? 'bg-yellow-400 text-black border-yellow-400' : isConnected ? 'bg-transparent text-neutral-400 border-neutral-600 hover:border-neutral-400 hover:text-white' : 'bg-neutral-900/50 text-neutral-700 border-neutral-800 cursor-not-allowed'}`}>
+                                    {platform.icon}
+                                    {platform.label}
+                                  </button>)})}
+                    </div>
                 </div>
-            </div>
-            
-            {/* NEW: Aspect Ratio Processing Preset */}
-            <div className="mb-6 pt-4 border-t border-neutral-700">
-                <h4 className="text-sm font-bold text-neutral-400 mb-2 flex items-center gap-2"><AdjustmentsHorizontalIcon className="w-4 h-4 text-blue-400"/> Media Processing</h4>
-                <select 
-                    value={processingPreset || ''}
-                    onChange={(e) => setProcessingPreset(e.target.value)}
-                    disabled={scheduleType === 'fully-auto'}
-                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-4 py-2 text-white focus:border-yellow-400 outline-none transition-colors" 
-                >
-                    <option value="">No Processing (Original Ratio)</option>
-                    <option value="9x16_REEL">Instagram/TikTok (9:16 Vertical Crop)</option>
-                    <option value="1x1_POST">Instagram Post (1:1 Square Pad)</option>
-                </select>
-                {processingPreset && (
-                    <p className="text-xs text-blue-400/80 mt-2">Simulated: Media will be automatically cropped/padded.</p>
-                )}
-            </div>
+                
+                {/* AI Caption Toggle */}
+                <div className={`flex justify-between items-center bg-neutral-900/50 p-4 rounded-xl border border-neutral-700 mb-4 ${scheduleType === 'fully-auto' ? 'border-yellow-400/50 shadow-inner' : ''}`}>
+                    <div className="flex items-center gap-2"><SparklesIcon className={`w-6 h-6 ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'text-yellow-400' : 'text-neutral-500'}`} /><span className="text-sm font-bold text-white">Auto AI Captioning</span></div>
+                    <button onClick={() => setIsAutoAiEnabled(!isAutoAiEnabled)} disabled={scheduleType === 'fully-auto'} className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'bg-yellow-500' : 'bg-neutral-600'}`}>
+                        <span className="sr-only">Toggle AI Captioning</span><span aria-hidden="true" className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'translate-x-6' : 'translate-x-1'}`}/>
+                    </button>
+                </div>
 
-            {/* AI Caption Toggle */}
-            <div className={`flex justify-between items-center bg-neutral-900/50 p-4 rounded-xl border border-neutral-700 mb-4 ${scheduleType === 'fully-auto' ? 'border-yellow-400/50 shadow-inner' : ''}`}>
-                <div className="flex items-center gap-2"><SparklesIcon className={`w-6 h-6 ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'text-yellow-400' : 'text-neutral-500'}`} /><span className="text-sm font-bold text-white">Auto AI Captioning</span></div>
-                <button onClick={() => setIsAutoAiEnabled(!isAutoAiEnabled)} disabled={scheduleType === 'fully-auto'} className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'bg-yellow-500' : 'bg-neutral-600'}`}>
-                    <span className="sr-only">Toggle AI Captioning</span><span aria-hidden="true" className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'translate-x-6' : 'translate-x-1'}`}/>
-                </button>
-            </div>
-
-            {/* Caption Box */}
-            <div className="relative">
-              <textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Write your caption here..." disabled={isAutoAiEnabled || isAiGenerating || scheduleType === 'fully-auto'}
-                className={`w-full h-32 bg-neutral-900 border border-neutral-700 text-white rounded-lg p-4 outline-none resize-none ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'opacity-70 italic cursor-not-allowed' : 'focus:border-yellow-400'}`}></textarea>
-              {isAutoAiEnabled && scheduleType !== 'fully-auto' && (<button onClick={handleAiCaption} disabled={isAiGenerating} className="absolute bottom-3 right-3 bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors">
-                  {isAiGenerating ? (<span className="animate-pulse">Thinking...</span>) : (<><SparklesIcon className="w-3 h-3" /> Re-Generate</>)}
-                </button>)}
-            </div>
+                {/* Caption Box */}
+                <div className="relative">
+                  <textarea value={caption} onChange={(e) => setCaption(e.target.value)} placeholder="Write your caption here..." disabled={isAutoAiEnabled || isAiGenerating || scheduleType === 'fully-auto'}
+                    className={`w-full h-32 bg-neutral-900 border border-neutral-700 text-white rounded-lg p-4 outline-none resize-none ${isAutoAiEnabled || scheduleType === 'fully-auto' ? 'opacity-70 italic cursor-not-allowed' : 'focus:border-yellow-400'}`}></textarea>
+                  {isAutoAiEnabled && scheduleType !== 'fully-auto' && (<button onClick={handleAiCaption} disabled={isAiGenerating} className="absolute bottom-3 right-3 bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-md flex items-center gap-1 transition-colors">
+                      {isAiGenerating ? (<span className="animate-pulse">Thinking...</span>) : (<><SparklesIcon className="w-3 h-3" /> Re-Generate</>)}
+                    </button>)}
+                </div>
+            </fieldset>
           </div>
 
         </div>
@@ -326,15 +323,19 @@ export default function Scheduler() {
                 </div>
               </div>
               <div className="p-4 pt-0 bg-neutral-900 shrink-0">
-                <button onClick={handleSchedule} disabled={isScheduling || selectedPlatforms.size === 0 || (scheduleType !== 'fully-auto' && selectedFiles.size === 0)}
-                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-neutral-900 font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button 
+                    onClick={handleSchedule}
+                    disabled={!isStep2Complete || selectedPlatforms.size === 0 || (scheduleType !== 'fully-auto' && selectedFiles.size === 0) || isScheduling}
+                    className="w-full bg-yellow-400 hover:bg-yellow-300 text-neutral-900 font-bold py-3 rounded-xl shadow-lg transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
                   {isScheduling ? 'Scheduling Job...' : scheduleType === 'fully-auto' ? 'Activate Automated Job 🚀' : 'Confirm Schedule 🚀'}
                 </button>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
-};
+}

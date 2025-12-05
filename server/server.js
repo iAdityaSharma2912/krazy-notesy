@@ -15,6 +15,7 @@ const UPLOADS_DIR = path.resolve(__dirname, 'uploads');
 // 1. Setup Storage Engine
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Ensure directory exists using the absolute path
     if (!fs.existsSync(UPLOADS_DIR)) {
       fs.mkdirSync(UPLOADS_DIR);
     }
@@ -31,11 +32,15 @@ const upload = multer({ storage: storage });
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// CRITICAL FIX: Serve Uploaded Files Statically using the absolute path
 app.use('/uploads', express.static(UPLOADS_DIR)); 
 
-// 2. Upload Route (unchanged)
+// 2. Upload Route
 app.post('/api/upload', upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).send('No file uploaded.');
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
   
   let type = 'pictures';
   if (req.file.mimetype.startsWith('video/')) {
@@ -53,13 +58,14 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
   res.json({ message: 'File uploaded successfully!', data: fileData });
 });
 
-// 3. Get All Files Route (unchanged)
+// 3. Get All Files Route
 app.get('/api/files', (req, res) => {
   if (!fs.existsSync(UPLOADS_DIR)) return res.json([]);
 
   fs.readdir(UPLOADS_DIR, (err, files) => {
     if (err) return res.status(500).send({ message: "Unable to scan files!" });
 
+    // Determine the base URL dynamically (handles localhost:5000 or ngrok address)
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
     const fileInfos = files.map((file) => {
@@ -86,7 +92,7 @@ app.get('/api/files', (req, res) => {
   });
 });
 
-// 4. Stats Route (unchanged)
+// 4. Stats Route
 app.get('/api/stats', (req, res) => {
   const directoryPath = UPLOADS_DIR;
   
@@ -114,9 +120,8 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-// 5. Delete Files Route (unchanged)
+// 5. Delete Files Route
 app.post('/api/files/delete', (req, res) => {
-  // ... (delete logic omitted for brevity)
   const { ids } = req.body;
   if (!ids || !Array.isArray(ids)) { return res.status(400).json({ message: "Invalid file list" }); }
   const directoryPath = UPLOADS_DIR;
@@ -129,35 +134,6 @@ app.post('/api/files/delete', (req, res) => {
     }
   });
   res.json({ message: `Deleted ${deletedCount} files successfully.` });
-});
-
-// 6. NEW: Save Scheduling Rules and Post Job Simulation
-app.post('/api/schedule/create', (req, res) => {
-    const jobData = req.body;
-    console.log(`\n--- NEW JOB RECEIVED ---`);
-    console.log(`Type: ${jobData.scheduleType}`);
-    console.log(`Platforms: ${jobData.selectedPlatforms.join(', ')}`);
-    
-    // Simulate Smart Queue calculation:
-    let executionTime = new Date(jobData.dateTime);
-    let message = `Job added to queue at ${executionTime.toLocaleTimeString()}.`;
-    
-    if (jobData.scheduleType !== 'one-time') {
-        message = `Automated daily job registered for ${jobData.time}.`;
-    }
-
-    if (jobData.minDelayHours) {
-        // Simulate a conflict and spacing
-        executionTime.setHours(executionTime.getHours() + jobData.minDelayHours);
-        message += ` Smart Queue applied: First post delayed to ${executionTime.toLocaleTimeString()}.`;
-    }
-
-    if (jobData.processingPreset) {
-        console.log(`Processing: Applying preset ${jobData.processingPreset}.`);
-        message += ` Media processed (9:16 crop applied).`;
-    }
-
-    res.json({ success: true, message });
 });
 
 

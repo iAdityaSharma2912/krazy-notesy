@@ -1,18 +1,18 @@
 import '@/styles/globals.css';
 import Layout from '@/components/Layout';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import axios from 'axios'; // Import Axios
 
-// Fix for Ngrok warning on Vercel deployment and CORS issues.
-// This header tells the backend service that the request is legitimate.
+// --- FIX FOR NGROK ---
+// This tells Ngrok "I am a real developer, let me in!"
 axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
+// ---------------------
 
 export default function App({ Component, pageProps }) {
   const router = useRouter();
 
-  // List of pages where we DO NOT want the sidebar (Public Routes)
-  // '/' is the Starry Night Landing Page. '/auth' is the login/signup form.
-  const noSidebarRoutes = ['/', '/auth'];
+  // List of pages where we DO NOT want the sidebar
+  const noSidebarRoutes = ['/', '/auth','/home'];
 
   const showSidebar = !noSidebarRoutes.includes(router.pathname);
 
@@ -24,3 +24,4 @@ export default function App({ Component, pageProps }) {
     <Component {...pageProps} />
   );
 }
+

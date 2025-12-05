@@ -10,30 +10,45 @@ import {
   UserCircleIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
+import { signOut } from 'firebase/auth'; 
+
+// --- FIREBASE CONTEXT SETUP ---
+const firebaseAuth = typeof window !== 'undefined' ? window.auth : null;
+
 
 const Sidebar = () => {
   const router = useRouter();
   const [user, setUser] = useState({ name: 'Creator', email: '' });
 
   useEffect(() => {
-    // Retrieve user info from localStorage (Must run on mount)
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    // FIX: Retrieve user info from localStorage (Must run on mount)
+    if (typeof window !== 'undefined') {
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        } else {
+            // If localStorage user is missing, ensure Firebase auth is checked
+            // (The parent App component handles the full redirect if Firebase isn't ready)
+            setUser({ name: 'Creator', email: '' });
+        }
     }
-  }, []);
+  }, [router.pathname]); // Dependency on pathname ensures user status is refreshed on navigation
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem('user');
-    router.push('/auth');
+    if (firebaseAuth) await signOut(firebaseAuth);
+    router.push('/');
   };
 
   const menuItems = [
+    // --- UPDATED ORDER ---
     { name: 'Dashboard', icon: <HomeIcon className="w-6 h-6" />, path: '/dashboard' },
     { name: 'Media Dropbox', icon: <CloudArrowUpIcon className="w-6 h-6" />, path: '/dropbox' },
+    // RENAMED & MOVED: Config renamed to Socials
+    { name: 'Socials', icon: <Cog6ToothIcon className="w-6 h-6" />, path: '/config' },
     { name: 'Scheduler', icon: <CalendarDaysIcon className="w-6 h-6" />, path: '/scheduler' },
     { name: 'Analytics', icon: <ChartBarIcon className="w-6 h-6" />, path: '/analytics' },
-    { name: 'Config', icon: <Cog6ToothIcon className="w-6 h-6" />, path: '/config' },
+    // ---------------------
   ];
 
   return (
@@ -87,9 +102,10 @@ const Sidebar = () => {
   );
 };
 
-const Layout = ({ children }) => {
+const Layout = ({ children, userName }) => {
   return (
     <div className="min-h-screen bg-neutral-950 text-white flex">
+      {/* Passing down the actual component structure */}
       <Sidebar />
       <main className="ml-64 w-full p-8">
         {children}
