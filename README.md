@@ -1,123 +1,172 @@
-🪐 KRAZY NOTESY - COSMIC SUPPLY CHAIN AUTOMATION
+🪐 KRAZY NOTESY – COSMIC SUPPLY CHAIN FOR SOCIAL CONTENT AUTOMATION
 
-Krazy Notesy is a proof-of-concept social media content scheduler designed for high-velocity, multi-platform publishing. This prototype demonstrates expertise in full-stack architecture, real-time data persistence (Firestore), advanced scheduling logic, and AI-driven analytics.
+A next-gen orchestration engine for multi-platform content deployment — engineered as a proof-of-concept to validate high-velocity automation, modular architecture, and AI-driven decisioning across the social publishing pipeline.
 
-✨ Features and Technical Highlights
+Krazy Notesy pushes beyond “just scheduling.” It’s a vertically integrated system simulating real-world workflows across ingestion, scheduling, analytics, queueing, and platform management.
 
-Feature Set
+🏅 Badges That Actually Matter
+<p align="left"> <img src="https://img.shields.io/badge/Status-Prototype%20V1.0-blue?style=flat-square" /> <img src="https://img.shields.io/badge/Build-Monorepo-green?style=flat-square" /> <img src="https://img.shields.io/badge/Stack-Next.js%20%7C%20Node.js%20%7C%20Firestore-orange?style=flat-square" /> <img src="https://img.shields.io/badge/AI-Ready-purple?style=flat-square" /> <img src="https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square" /> </p>
+⚡ Executive Summary
 
-Technical Implementation
+Krazy Notesy is a full-stack social media supply chain prototype validating:
 
-Proof of Concept
+event-driven scheduling
 
-Advanced Scheduler
+cross-platform publishing logic
 
-Implements a step-by-step workflow with controls for recurrence (One-Time, Fully Auto), job payload creation, and Smart Queue Rules (simulating minimum posting delay).
+metadata-first media workflows
 
-Demonstrates complex form state management and job submission to Node.js API.
+analytics visualization
 
-A/B Analytics Engine
+future-ready AI hooks
 
-Uses Chart.js for dynamic A/B comparison charts and simulates an AI Recommendation Engine based on mock data performance.
+scalable monorepo architecture
 
-Features dynamic filtering by connected platforms and a visual KPI Summary Strip.
+Think of it as the MVP of a ContentOps automation platform.
 
-Media Handling
+🧠 Core Feature Portfolio
+Feature Set	Technical Blueprint	Business Value
+Advanced Scheduler	Recurrence engine (One-Time, Auto), workflow gating, smart posting delays	Validates orchestration logic for enterprise scheduling
+A/B Analytics Engine	Chart.js interactive KPIs + simulated AI scoring	Demonstrates insights layer for performance optimization
+Media Handling Framework	Metadata–storage decoupling, Multer ingestion, react-dropzone DnD	Mimics scalable asset pipelines used by real CMS tools
+Platform Scalability	Tracks 9+ social platforms with persistent mock-auth	Simulates multi-tenant social integration infrastructure
+🧩 Tech Stack Overview
+Frontend
 
-Decouples file metadata from physical storage. Supports Drag & Drop functionality via react-dropzone.
+Next.js (App Router)
 
-Metadata (URL, size, type) is stored in Firestore; actual files are saved locally via Multer in the Node API.
+React + Context-based workflow state
 
-Scalable Socials
+Chart.js for dynamic KPI charts
 
-Tracks mock connection status for an expanded list of 9+ platforms (Instagram, Threads, Facebook, TikTok, LinkedIn, etc.)
+react-dropzone for DnD file ingestion
 
-Uses local storage to persist connection status, integrated via the Configuration page.
+Tailwind + modular components
 
-Core Architecture
+Local Storage for persistent mock platform connections
 
-Monorepo structure (client/server) using Next.js for the frontend and Express/Node for the backend API.
+Backend
 
-Decoupled system structure for maintainability.
+Express.js (Node)
 
-🚀 Getting Started (Local Deployment)
+Multer for file handling
 
-This project requires two separate terminals to run the frontend and the backend API simultaneously.
+Firestore (metadata and scheduler persistence)
 
-Prerequisites
+Mock analytics service
 
-Node.js (LTS version)
+REST API architecture for portability
 
-npm or yarn
+DevOps / Deployment
 
-Git
+Monorepo structure (client/ + server/)
 
-Step 1: Clone the Repository
+Vercel frontend hosting
 
-git clone [https://github.com/iAdityaSharma2912/krazy-notesy.git](https://github.com/iAdityaSharma2912/krazy-notesy.git)
+External Node backend (Ngrok / VPS / Render etc.)
+
+Cross-origin data fetching via NEXT_PUBLIC_API_URL
+
+🏗 High-Level Architecture Diagram
+                    ┌──────────────────────────────────┐
+                    │            Frontend               │
+                    │           (Next.js)               │
+                    │  - Scheduler UI                   │
+                    │  - A/B Analytics UI               │
+                    │  - Media Manager                  │
+                    │  - Platform Config                │
+                    └──────────────┬───────────────────┘
+                                   │ REST API Calls
+                                   ▼
+            ┌──────────────────────────────────────────────────┐
+            │                   Backend (Node.js)               │
+            │  - Multer File Uploads                           │
+            │  - Mock Analytics Engine                          │
+            │  - Media Router                                   │
+            │  - Job Payload Builder                            │
+            └──────────────┬───────────────────────────────────┘
+                           │
+                           ▼
+          ┌───────────────────────────────────────────┐
+          │              Firestore Database            │
+          │  - Real-time job persistence              │
+          │  - Metadata for media                     │
+          │  - Scheduler configs                      │
+          └───────────────────────────────────────────┘
+
+
+🚀 Local Deployment Blueprint
+
+Two terminals required: API + Client.
+
+1️⃣ Clone the Repository
+git clone https://github.com/iAdityaSharma2912/krazy-notesy.git
 cd krazy-notesy
 
-
-Step 2: Set up the Backend (API)
-
-The backend handles file uploads (Multer) and serves mock analytics and media file paths.
-
-Navigate to the server directory and install dependencies:
-
+2️⃣ Backend Setup (API Layer)
 cd server
 npm install
-
-
-Create an uploads directory in the server folder to store local media files.
-
-Start the API server on PORT 5000:
-
+mkdir uploads
 node server.js
 
 
-(Leave this terminal running.)
+Backend runs at: http://localhost:5000
 
-Step 3: Set up the Frontend (Next.js)
-
-The frontend hosts the React application.
-
-Open a new terminal and navigate to the client directory:
-
+3️⃣ Frontend Setup (Next.js)
 cd client
 npm install
-
-
-(Note: The build errors encountered previously are solved by correctly installing dependencies in this directory.)
-
-Start the Next.js development server on PORT 3000:
-
 npm run dev
 
 
-🌐 Accessing the Application
+Frontend runs at: http://localhost:3000
 
-Web App: Open your browser and navigate to http://localhost:3000/.
+🔐 Access Credentials
 
-Mock Login: Use the following credentials to access the protected routes:
+Mock Login:
 
 Email: test
 
 Password: 123
 
-API Check: Confirm the API is working by navigating to http://localhost:5000/api/stats.
+API Health Check:
+http://localhost:5000/api/stats
 
-⚙️ Deployment Troubleshooting (Vercel)
+☁️ Vercel Deployment Guidelines
+Ensure these settings are configured:
+Root Directory
+client
 
-If the Vercel deployment fails (e.g., Module Not Found or 404), ensure the following settings are configured in your Vercel Project Dashboard:
+Build Command
+npm run build
 
-Root Directory: Must be set to client (This tells Vercel where the Next.js app lives).
+Required Environment Variable
+NEXT_PUBLIC_API_URL=<public-node-api-url>
 
-Build Command: npm run build
 
-Environment Variables: You must define NEXT_PUBLIC_API_URL to point to the public address of your Node.js server (e.g., your Ngrok URL or external server IP) for cross-origin data fetching.
+Without this, the analytics engine and media manager won’t work.
 
-🤝 Project Contribution
+🧭 Future Roadmap – Vision 2.0
 
-Developed by: [Your Name / Team Name]
+🔌 Real OAuth integrations (Meta, TikTok, LinkedIn, X, YouTube)
 
-Project Status: Feature Complete (Prototype V1.0)
+🤖 AI Scoring Engine analyzing thumbnails, captions, timing
+
+🕒 Distributed Scheduler using queues (BullMQ / Cloud Tasks)
+
+☁️ Cloud Storage Integration (S3 / GCS)
+
+📊 Full Analytics Dashboard with platform-wise KPIs
+
+🧬 Content Intelligence Layer: hashtags, tone scoring, virality predictions
+
+💼 Team Collaboration Mode with roles, drafts, and approvals
+
+👥 Project Ownership
+
+Developed By: Aditya Sharma
+
+Project Type: Prototype 
+
+Current Version: V1.0
+
+Strategic Goal: Validate scalability for enterprise-grade ContentOps automation
